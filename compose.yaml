@@ -72,16 +72,82 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.api.rule=Host(`${DOMAINE}`) && PathPrefix(`/api`)
+      - traefik.http.routers.api.entrypoints=websecure
+      - traefik.http.routers.api.middlewares=sans-prefixe-api,limite-api
+      - traefik.http.middlewares.sans-prefixe-api.stripprefix.prefixes=/api
+      - traefik.http.middlewares.limite-api.ratelimit.average=20
+      - traefik.http.middlewares.limite-api.ratelimit.burst=40
+      - traefik.http.services.api.loadbalancer.server.port=8000
     restart: unless-stopped
 
   frontend:
     build: ./frontend
     image: mboa-frontend:1.0
     networks: [front]
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.site.rule=Host(`${DOMAINE:?il manque DOMAINE dans .env}`)
+      - traefik.http.routers.site.entrypoints=websecure
+      - traefik.http.services.site.loadbalancer.server.port=80
     restart: unless-stopped
 
+  
+  traefik:
+    image: traefik:v3.7
+    command:
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.websecure.http.tls.certresolver=letsencrypt
+      - --global.aliasheadersstrategy=delete
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
+      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=mboa-market_front
+      - --api.dashboard=true
+      - --api.insecure=true
+      - --ping=true
+      - --accesslog=true
+    ports:
+      - "0.0.0.0:80:80"
+      - "0.0.0.0:443:443"
+      - "127.0.0.1:8084:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/mboa-market/letsencrypt:/letsencrypt
+    networks: [front]
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
 
-
+  sauvegarde:
+    build: ./sauvegarde
+    image: mboa-sauvegarde:1.0
+    environment:
+      PGHOST: db
+      PGDATABASE: ${POSTGRES_DB}
+      PGUSER: ${POSTGRES_USER}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      GARDER_MINUTES: "60"
+      TZ: Africa/Douala
+    volumes:
+      - ${DOSSIER_SAUVEGARDES:-/var/backups/mboa-market}:/sauvegardes
+    tmpfs:
+      - /var/lib/postgresql
+    networks: [back]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+      
 networks:
   front:
   back:
