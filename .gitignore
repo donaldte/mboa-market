@@ -1,0 +1,7 @@
+.env
+*.sql.gz
+*.sql
+sauvegardes/
+!db/init.sql
+__pycache__/
+*.pyc

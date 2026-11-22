@@ -1,0 +1,31 @@
+# Mboa Market : la boutique complète, six services, un seul fichier.
+# Tu l'écris pas à pas, un service par étape, dans cet ordre (chaque étape finit par un commit) :
+#
+#   étape 2 (P2-02)  db          PostgreSQL 18 : ses données dans un volume nommé ; réseau back
+#                    redis       Redis 8, avec un mot de passe ; réseau back
+#   étape 3 (P2-03)  backend     l'API, construite ici (build: ./backend) ; réseaux front et back
+#   étape 4 (P2-04)  frontend    le site, construit ici (build: ./frontend) ; réseau front
+#   étape 5 (P2-05)  traefik     la seule porte, sur 127.0.0.1:8083 ; et les étiquettes (labels)
+#                                de backend et frontend, qui lui disent quoi servir
+#   étape 6 (P2-06)  sauvegarde  pg_dump chaque minute (build: ./sauvegarde), dans /var/backups/mboa-market
+#
+# Les secrets viennent de .env, qui ne va jamais dans Git : ${POSTGRES_PASSWORD}, ${REDIS_PASSWORD}…
+#   sudo docker compose up -d --build        construit, crée et démarre (ou met à jour) ce qui est écrit
+#   sudo docker compose ps                   l'état des services
+#   sudo docker compose logs -f <service>    le journal d'un service
+# Le guide, étape par étape : less /srv/mboamarket/tickets/projet2.md (et le support PDF).
+name: mboa-market
+
+services:
+  # À FAIRE (étape 2) : db, puis redis.
+
+  # À FAIRE (étape 3) : backend.
+
+  # À FAIRE (étape 4) : frontend.
+
+  # À FAIRE (étape 5) : traefik (et les labels de backend et de frontend).
+
+  # À FAIRE (étape 6) : sauvegarde.
+
+# À FAIRE (étape 2) : les deux réseaux, front et back (internal: true),
+# et les deux volumes nommés, pgdata et redisdata.
