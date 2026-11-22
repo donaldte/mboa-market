@@ -54,6 +54,25 @@ services:
       timeout: 3s
       retries: 10
     restart: unless-stopped
+  
+  backend:
+    build: ./backend
+    image: mboa-api:3.0
+    environment:
+      MBOA_DB_HOST: db
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      MBOA_REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      MBOA_JETON: ${MBOA_JETON:?il manque dans .env, cp .env.exemple .env}
+    networks: [front, back]
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
 
 networks:
   front:
