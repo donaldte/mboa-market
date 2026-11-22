@@ -74,6 +74,14 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  frontend:
+    build: ./frontend
+    image: mboa-frontend:1.0
+    networks: [front]
+    restart: unless-stopped
+
+
+
 networks:
   front:
   back:

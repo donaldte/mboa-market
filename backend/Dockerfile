@@ -16,7 +16,8 @@ RUN groupadd --system --gid 10001 mboa && useradd --system --uid 10001 --gid mbo
 COPY --from=construction /opt/venv /opt/venv 
 WORKDIR /app 
 COPY app.py . 
-ENV PATH=/opt/venv/bin:$PATH PYTHONUNBUFFERED=1 
+ENV PATH=/opt/venv/bin:$PATH PYTHONUNBUFFERED=1
+USER mboa 
 HEALTHCHECK --interval=10s --timeout=3s --start-period=10s --retries=3 \
     CMD ["python3", "-c", \
          "import urllib.request as u; u.urlopen('http://127.0.0.1:8000/sante', timeout=2)"]
